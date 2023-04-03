@@ -5,17 +5,14 @@ const server = app.listen(3232, log('Proxy server is running at port 3232'));
 import got from "got";
 import cors from "cors";
 
-
-
-// tulind function
-// const {sma_inc} = require("./indicators.js");
-//  import sma_inc from "./indicators.js";
-
 import tulind from "tulind";
 import {promisify} from "util";
 
-const sma_async = promisify(tulind.indicators.sma.indicator);
 
+const sma_async = promisify(tulind.indicators.sma.indicator);
+const ema_async = promisify(tulind.indicators.ema.indicator);
+
+// sma
 const sma_inc = async (data) => {
    const d1 = data.map((d) => d.close);
    const results = await sma_async([d1], [100]);
@@ -27,6 +24,23 @@ const sma_inc = async (data) => {
 
    return data;
 };
+
+// ema
+const ema_inc = async (data) => {
+  const d1 = data.map((d) => d.close);
+  const results = await ema_async([d1], [21]);
+  const d2 = results[0];
+  const diff = data.length - d2.length;
+  const emptyArr = [...new Array(diff)].map((d) => '');
+  const d3 = [...emptyArr, ...d2];
+  data = data.map((d, i) => ({ ...d, sma: d3[i] }));
+
+  return data;
+};
+
+
+
+// ******App******
 
 app.use(cors());
 app.get('/:symbol/:interval', async (req, res) => {
@@ -44,6 +58,7 @@ app.get('/:symbol/:interval', async (req, res) => {
       close: d[4] * 1,
     }));
     klinedata = await sma_inc(klinedata);
+    klinedata = await ema_inc(klinedata);
     res.status(200).json(klinedata);
   } catch (err) {
     res.status(500).send(err);
