@@ -5,6 +5,8 @@ const server = app.listen(3232, log('Proxy server is running at port 3232'));
 import got from "got";
 import cors from "cors";
 
+
+
 // tulind function
 // const {sma_inc} = require("./indicators.js");
 //  import sma_inc from "./indicators.js";
@@ -31,7 +33,7 @@ app.get('/:symbol/:interval', async (req, res) => {
     try {
     const {symbol, interval} = req.params;
     const resp = await got (
-        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}`
+       `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}`
     );
     const data = JSON.parse(resp.body);
     let klinedata = data.map((d) => ({
