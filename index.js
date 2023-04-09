@@ -98,7 +98,70 @@ const macd_inc = async (data) => {
 
 // ******App******
 
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+dotenv.config();
+
+const helloWorld = process.env.FIG;
+
 app.use(cors());
+
+const apiEndpoint = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest';
+// const currency = 'USD';
+
+app.get('/test/:ticker/:currency', async (req, res) => {
+  try {
+    const { ticker, currency } = req.params;
+  const response = await got (
+    `${apiEndpoint}?symbol=${ticker}&convert=${currency}`, {
+      headers: {
+        'X-CMC_PRO_API_KEY': helloWorld
+      }
+    });
+    const data = JSON.parse(response.body);
+
+    const prc = data.data[ticker].quote[currency].price;
+    const volume = data.data[ticker].quote[currency].volume_24h;
+    const mcap = data.data[ticker].quote[currency].market_cap;
+    const p24change = data.data[ticker].quote[currency].percent_change_24h;
+
+    // ar
+    const arr = { price: prc.toFixed(6), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), percent_change: p24change.toFixed(2) };
+
+    if (currency == "USD") {
+      log(prc.toFixed(6));
+      log("volume: "+volume + " $");
+      log("marketcap: " + mcap + " $");
+      res.status(200).json(arr);
+    } else if (currency =="BTC") {
+      log(prc.toFixed(8));
+      log("volume: "+volume);
+      log("marketcap: " + mcap);
+
+      // override arr
+      const arr = { price: prc.toFixed(8), volume: volume.toFixed(2), marketcap: mcap.toFixed(2) };
+      res.status(200).json(arr);
+    }
+    // log(prc.toFixed(8));
+    // res.status(200).json(prc.toFixed(8));
+  } catch (err) {
+    res.status(500).send(err);
+  }
+  // const price = fetch(`${apiEndpoint}?symbol=${ticker}&convert=${currency}`, {
+  //   headers: {
+  //     'X-CMC_PRO_API_KEY': 'e5ad51b9-f67c-4254-8d72-17693c17ee80'
+  //   }
+  // })
+
+  // .then(response => response.json())
+  // .then(data => {
+  //   console.log(`Current ${ticker} price: ${data.data[ticker].quote[currency].price}`);
+  // })
+  // .catch(error => {
+  //   console.error('Error:', error);
+  // });
+});
+
 app.get('/:symbol/:interval', async (req, res) => {
     try {
     const {symbol, interval} = req.params;
@@ -113,6 +176,7 @@ app.get('/:symbol/:interval', async (req, res) => {
       low: d[3] * 1,
       close: d[4] * 1,
     }));
+
     klinedata = await sma_inc(klinedata);
     klinedata = await ema_inc(klinedata);
     klinedata = markers_inc(klinedata);
