@@ -106,7 +106,36 @@ const helloWorld = process.env.FIG;
 
 app.use(cors());
 
+
+// convert request
+
+app.get('/convert/:amo/:sym/:con', async(req, res) => {
+  const { amo, sym, con } = req.params;
+  const myApi = `https://pro-api.coinmarketcap.com/v1/tools/price-conversion?${new URLSearchParams({
+    amount: amo,
+    symbol: sym,
+    convert: con
+  })}`;
+  
+fetch(myApi, {
+    headers: {
+      'X-CMC_PRO_API_KEY': helloWorld
+    }
+})
+.then(resp => resp.json())
+.then(data => {
+    const convertedAmount = data.data.quote[con].price;
+    console.log(`${amo} ${sym} is currently worth ${convertedAmount} ${con}`);
+    res.status(200).json(convertedAmount);
+})
+.catch(error => console.error(error));
+})
+
+
+
 const apiEndpoint = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest';
+
+//////////////////////
 // const currency = 'USD';
 
 app.get('/test/:ticker/:currency', async (req, res) => {
