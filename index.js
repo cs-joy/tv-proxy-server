@@ -126,7 +126,13 @@ fetch(myApi, {
 .then(data => {
     const convertedAmount = data.data.quote[con].price;
     console.log(`${amo} ${sym} is currently worth ${convertedAmount} ${con}`);
-    res.status(200).json(convertedAmount);
+    var jsn = "";
+    if (con != 'USD') {
+      jsn = { conv: convertedAmount.toFixed(8) }
+    } else {
+      jsn = { conv: convertedAmount.toFixed(2) }
+    }
+    res.status(200).json(jsn);
 })
 .catch(error => console.error(error));
 })
