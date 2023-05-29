@@ -157,12 +157,17 @@ app.get('/test/:ticker/:currency', async (req, res) => {
 
     const prc = data.data[ticker].quote[currency].price;
     const volume = data.data[ticker].quote[currency].volume_24h;
+    const circulating_supply = data.data[ticker].circulating_supply;
+    const total_supply = data.data[ticker].total_supply;
+    const fully_diluted_market_cap = data.data[ticker].quote[currency].fully_diluted_market_cap;
     const mcap = data.data[ticker].quote[currency].market_cap;
     const p24change = data.data[ticker].quote[currency].percent_change_24h;
 
     // ar
-    const arr = { price: prc.toFixed(6), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), percent_change: p24change.toFixed(2) };
-
+    const arr = { price: prc.toFixed(6), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), fully_diluted_market_cap: fully_diluted_market_cap.toFixed(0), percent_change: p24change.toFixed(2), cir_supply: circulating_supply.toFixed(0), tot_supply: total_supply.toFixed(0) };
+    //log("circulating_supply: "+circulating_supply.toFixed(0));
+    //log("max_supply: "+max_supply.toFixed(0));
+    //log(fully_diluted_market_cap.toFixed(0));
     if (currency == "USD") {
       log(prc.toFixed(6));
       log("volume: "+volume + " $");
@@ -174,7 +179,7 @@ app.get('/test/:ticker/:currency', async (req, res) => {
       log("marketcap: " + mcap);
 
       // override arr
-      const arr = { price: prc.toFixed(8), volume: volume.toFixed(2), marketcap: mcap.toFixed(2) };
+      const arr = { price: prc.toFixed(8), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), fully_diluted_market_cap: fully_diluted_market_cap.toFixed(0), cir_supply: circulating_supply.toFixed(0), tot_supply: total_supply.toFixed(0) };
       res.status(200).json(arr);
     }
     // log(prc.toFixed(8));
