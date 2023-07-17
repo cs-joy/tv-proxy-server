@@ -147,7 +147,7 @@ const apiEndpoint = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/
 app.get('/test/:ticker/:currency', async (req, res) => {
   try {
     const { ticker, currency } = req.params;
-  const response = await got (
+    const response = await got (
     `${apiEndpoint}?symbol=${ticker}&convert=${currency}`, {
       headers: {
         'X-CMC_PRO_API_KEY': helloWorld
@@ -158,16 +158,21 @@ app.get('/test/:ticker/:currency', async (req, res) => {
     const prc = data.data[ticker].quote[currency].price;
     const volume = data.data[ticker].quote[currency].volume_24h;
     const circulating_supply = data.data[ticker].circulating_supply;
+    const rank = data.data[ticker].cmc_rank;
     const total_supply = data.data[ticker].total_supply;
     const fully_diluted_market_cap = data.data[ticker].quote[currency].fully_diluted_market_cap;
     const mcap = data.data[ticker].quote[currency].market_cap;
     const p24change = data.data[ticker].quote[currency].percent_change_24h;
 
+    const market_cap_dominance = data.data[ticker].quote[currency].market_cap_dominance;
+
     // ar
-    const arr = { price: prc.toFixed(6), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), fully_diluted_market_cap: fully_diluted_market_cap.toFixed(0), percent_change: p24change.toFixed(2), cir_supply: circulating_supply.toFixed(0), tot_supply: total_supply.toFixed(0) };
+    const arr = {rank: rank, price: prc.toFixed(6), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), fully_diluted_market_cap: fully_diluted_market_cap.toFixed(0), percent_change: p24change.toFixed(2), cir_supply: circulating_supply.toFixed(0), tot_supply: total_supply.toFixed(0), m_cap_dominance: market_cap_dominance };
     //log("circulating_supply: "+circulating_supply.toFixed(0));
     //log("max_supply: "+max_supply.toFixed(0));
     //log(fully_diluted_market_cap.toFixed(0));
+    //log(rank);
+    //log(market_cap_dominance);
     if (currency == "USD") {
       log(prc.toFixed(6));
       log("volume: "+volume + " $");
@@ -179,7 +184,7 @@ app.get('/test/:ticker/:currency', async (req, res) => {
       log("marketcap: " + mcap);
 
       // override arr
-      const arr = { price: prc.toFixed(8), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), fully_diluted_market_cap: fully_diluted_market_cap.toFixed(0), cir_supply: circulating_supply.toFixed(0), tot_supply: total_supply.toFixed(0) };
+      const arr = {project_rank: rank, price: prc.toFixed(8), volume: volume.toFixed(2), marketcap: mcap.toFixed(2), fully_diluted_market_cap: fully_diluted_market_cap.toFixed(0), cir_supply: circulating_supply.toFixed(0), tot_supply: total_supply.toFixed(0), m_cap_dominance: market_cap_dominance };
       res.status(200).json(arr);
     }
     // log(prc.toFixed(8));
@@ -223,6 +228,28 @@ app.get('/:symbol/:interval', async (req, res) => {
     klinedata = await rsi_inc(klinedata);
     klinedata = await macd_inc(klinedata);
     res.status(200).json(klinedata);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+
+const blockchainApiEndpoint = "https://pro-api.coinmarketcap.com/v1/blockchain/statistics/latest";
+
+app.get('/chain-details/:id/', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await got (
+    `${blockchainApiEndpoint}?id=${id}`, {
+      headers: {
+        'X-CMC_PRO_API_KEY': helloWorld
+      }
+    });
+    const data = JSON.parse(response.body);
+
+    res.status(200).json(data);
+    log(data)
+
   } catch (err) {
     res.status(500).send(err);
   }
